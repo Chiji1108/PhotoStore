@@ -34,7 +34,6 @@ struct PhotoDetailView: View {
                 switch viewMode {
                 case .photo:
                     photoView
-                        .transition(.opacity)
                 case .both:
                     GeometryReader { geometry in
                         VStack(spacing: 0) {
@@ -46,10 +45,8 @@ struct PhotoDetailView: View {
                     }
                 case .map:
                     mapView
-                        .transition(.opacity)
                 }
             }
-            .animation(.default, value: viewMode)
 
             Spacer()
         }
