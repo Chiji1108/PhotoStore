@@ -18,6 +18,8 @@ struct ContentView: View {
     @State private var newPhotoData: Data?
     @State private var newPhotoName: String = ""
 
+    let locationFetcher = LocationFetcher()
+
     var body: some View {
         NavigationStack {
             List(photoItems) { item in
@@ -38,6 +40,7 @@ struct ContentView: View {
                 Task {
                     if let data = try? await newValue?.loadTransferable(type: Data.self) {
                         newPhotoData = data
+                        locationFetcher.start()  // 位置情報の取得を開始
                         showingNameDialog = true
                     }
                 }
@@ -46,7 +49,13 @@ struct ContentView: View {
                 TextField("名前", text: $newPhotoName)
                 Button("保存") {
                     if let data = newPhotoData {
-                        let newItem = PhotoItem(name: newPhotoName, photoData: data)
+                        let location = locationFetcher.lastKnownLocation
+                        let newItem = PhotoItem(
+                            name: newPhotoName,
+                            photoData: data,
+                            latitude: location?.latitude,
+                            longitude: location?.longitude
+                        )
                         modelContext.insert(newItem)
                         newPhotoName = ""
                         newPhotoData = nil

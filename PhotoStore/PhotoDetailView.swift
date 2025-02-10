@@ -5,18 +5,90 @@
 //  Created by 千々岩真吾 on 2025/02/08.
 //
 
+import MapKit
 import SwiftUI
 
 struct PhotoDetailView: View {
     let photoItem: PhotoItem
+    @State private var viewMode = ViewMode.photo
+
+    enum ViewMode {
+        case photo
+        case both
+        case map
+    }
 
     var body: some View {
-        if let uiImage = UIImage(data: photoItem.photoData) {
-            Image(uiImage: uiImage)
-                .resizable()
-                .scaledToFit()
-                .navigationTitle(photoItem.name)
+        VStack {
+            Picker("表示モード", selection: $viewMode) {
+                Image(systemName: "photo").tag(ViewMode.photo)
+                Image(systemName: "square.split.2x1").tag(ViewMode.both)
+                Image(systemName: "map").tag(ViewMode.map)
+            }
+            .pickerStyle(.segmented)
+            .padding()
+
+            Group {
+                switch viewMode {
+                case .photo:
+                    photoView
+                        .transition(.opacity)
+                case .both:
+                    GeometryReader { geometry in
+                        HStack(spacing: 0) {
+                            photoView
+                                .frame(width: geometry.size.width / 2)
+                            mapView
+                                .frame(width: geometry.size.width / 2)
+                        }
+                    }
+                case .map:
+                    mapView
+                        .transition(.opacity)
+                }
+            }
+            .animation(.default, value: viewMode)
         }
+        .navigationTitle(photoItem.name)
+    }
+
+    var photoView: some View {
+        Group {
+            if let uiImage = UIImage(data: photoItem.photoData) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFit()
+            }
+        }
+    }
+
+    var mapView: some View {
+        Group {
+            if let latitude = photoItem.latitude,
+                let longitude = photoItem.longitude
+            {
+                Map(initialPosition: .region(region(latitude: latitude, longitude: longitude))) {
+                    Marker(
+                        photoItem.name,
+                        coordinate: CLLocationCoordinate2D(
+                            latitude: latitude,
+                            longitude: longitude
+                        ))
+                }
+            } else {
+                ContentUnavailableView(
+                    "位置情報なし",
+                    systemImage: "location.slash",
+                    description: Text("この写真には位置情報が記録されていません"))
+            }
+        }
+    }
+
+    private func region(latitude: Double, longitude: Double) -> MKCoordinateRegion {
+        MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: latitude, longitude: longitude),
+            span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+        )
     }
 }
 
