@@ -12,10 +12,10 @@ struct PhotoDetailView: View {
     let photoItem: PhotoItem
     @State private var viewMode = ViewMode.photo
 
-    enum ViewMode {
-        case photo
-        case both
-        case map
+    enum ViewMode: Int {
+        case photo = 0
+        case both = 1
+        case map = 2
     }
 
     var body: some View {
@@ -28,27 +28,24 @@ struct PhotoDetailView: View {
             .pickerStyle(.segmented)
             .padding()
 
-            Spacer()
+            TabView(selection: $viewMode) {
+                photoView
+                    .tag(ViewMode.photo)
 
-            Group {
-                switch viewMode {
-                case .photo:
-                    photoView
-                case .both:
-                    GeometryReader { geometry in
-                        VStack(spacing: 0) {
-                            photoView
-                                .frame(height: geometry.size.height / 2)
-                            mapView
-                                .frame(height: geometry.size.height / 2)
-                        }
+                GeometryReader { geometry in
+                    VStack(spacing: 0) {
+                        photoView
+                            .frame(height: geometry.size.height / 2)
+                        mapView
+                            .frame(height: geometry.size.height / 2)
                     }
-                case .map:
-                    mapView
                 }
-            }
+                .tag(ViewMode.both)
 
-            Spacer()
+                mapView
+                    .tag(ViewMode.map)
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
         }
         .navigationTitle(photoItem.name)
     }
