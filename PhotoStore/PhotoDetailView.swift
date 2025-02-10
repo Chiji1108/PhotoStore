@@ -22,11 +22,13 @@ struct PhotoDetailView: View {
         VStack {
             Picker("表示モード", selection: $viewMode) {
                 Image(systemName: "photo").tag(ViewMode.photo)
-                Image(systemName: "square.split.2x1").tag(ViewMode.both)
+                Image(systemName: "square.split.1x2").tag(ViewMode.both)
                 Image(systemName: "map").tag(ViewMode.map)
             }
             .pickerStyle(.segmented)
             .padding()
+
+            Spacer()
 
             Group {
                 switch viewMode {
@@ -35,11 +37,11 @@ struct PhotoDetailView: View {
                         .transition(.opacity)
                 case .both:
                     GeometryReader { geometry in
-                        HStack(spacing: 0) {
+                        VStack(spacing: 0) {
                             photoView
-                                .frame(width: geometry.size.width / 2)
+                                .frame(height: geometry.size.height / 2)
                             mapView
-                                .frame(width: geometry.size.width / 2)
+                                .frame(height: geometry.size.height / 2)
                         }
                     }
                 case .map:
@@ -48,6 +50,8 @@ struct PhotoDetailView: View {
                 }
             }
             .animation(.default, value: viewMode)
+
+            Spacer()
         }
         .navigationTitle(photoItem.name)
     }
